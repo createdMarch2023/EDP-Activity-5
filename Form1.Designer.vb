@@ -56,6 +56,7 @@ Partial Class Form1
         Me.Logout = New System.Windows.Forms.Label()
         Me.ExportTable = New System.Windows.Forms.Button()
         Me.ImportDatabase = New System.Windows.Forms.Button()
+        Me.GenerateReportButton = New System.Windows.Forms.Button()
         CType(Me.DataGridView1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.PanelStatus.SuspendLayout()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -435,6 +436,18 @@ Partial Class Form1
         Me.ImportDatabase.Text = "Import"
         Me.ImportDatabase.UseVisualStyleBackColor = True
         '
+        'GenerateReportButton
+        '
+        Me.GenerateReportButton.Cursor = System.Windows.Forms.Cursors.Hand
+        Me.GenerateReportButton.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.GenerateReportButton.ForeColor = System.Drawing.SystemColors.ActiveCaptionText
+        Me.GenerateReportButton.Location = New System.Drawing.Point(40, 650)
+        Me.GenerateReportButton.Name = "GenerateReportButton"
+        Me.GenerateReportButton.Size = New System.Drawing.Size(183, 38)
+        Me.GenerateReportButton.TabIndex = 37
+        Me.GenerateReportButton.Text = "Generate Report"
+        Me.GenerateReportButton.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
@@ -443,6 +456,7 @@ Partial Class Form1
         Me.BackColor = System.Drawing.Color.Black
         Me.ClientSize = New System.Drawing.Size(808, 709)
         Me.ControlBox = False
+        Me.Controls.Add(Me.GenerateReportButton)
         Me.Controls.Add(Me.ImportDatabase)
         Me.Controls.Add(Me.ExportTable)
         Me.Controls.Add(Me.Logout)
@@ -520,4 +534,5 @@ Partial Class Form1
     Friend WithEvents Logout As Label
     Friend WithEvents ExportTable As Button
     Friend WithEvents ImportDatabase As Button
+    Friend WithEvents GenerateReportButton As Button
 End Class

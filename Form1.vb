@@ -4,8 +4,11 @@ Imports System.Windows.Forms.VisualStyles.VisualStyleElement
 Imports System.Windows.Forms.VisualStyles.VisualStyleElement.Button
 Imports Microsoft.VisualBasic.FileIO
 Imports MySql.Data.MySqlClient
+Imports Microsoft.Office.Interop
+Imports System.Net
 
 Public Class Form1
+
     Private Sub Label1_Click(sender As Object, e As EventArgs) Handles Label1.Click
 
     End Sub
@@ -508,6 +511,123 @@ Public Class Form1
             conn.Close()
             MessageBox.Show("Import successful!")
         End If
+    End Sub
+
+    Private Sub GenerateReportButton_Click(sender As Object, e As EventArgs) Handles GenerateReportButton.Click
+        'Dim connectionString As String = "Server=localhost;Database=yugioh;Uid=root;Pwd=user;"
+        'Dim tableName As String = "card"
+
+        Dim connectionString As String = "Server=localhost;Database=yugioh;Uid=root;Pwd=user;"
+
+        Dim excelApp As New Excel.Application
+        Dim excelWorkbook As Excel.Workbook = excelApp.Workbooks.Add()
+        Dim excelWorksheet As Excel.Worksheet = excelWorkbook.Sheets("Sheet1")
+
+        'Dim excelWorksheet As Excel.Worksheet = CType(excelWorkbook.Sheets.Add(), Excel.Worksheet)
+
+        Dim sqlQuery As String = "SELECT Type, COUNT(*) as Count FROM card GROUP BY Type"
+        Dim sqlConnection As New MySqlConnection(connectionString)
+        Dim sqlCommand As New MySqlCommand(sqlQuery, sqlConnection)
+        sqlConnection.Open()
+        Dim sqlReader As MySqlDataReader = sqlCommand.ExecuteReader()
+
+        Dim countSpell As Integer = 0
+        Dim countTrap As Integer = 0
+        Dim countMonster As Integer = 0
+
+        While sqlReader.Read()
+            Dim value As String = sqlReader("Type")
+            Dim count As Integer = Convert.ToInt32(sqlReader("Count"))
+            ' do something with the value and count, such as add them to a dictionary or list
+            If value = "Spell" Then
+                countSpell = count
+            ElseIf value = "Trap" Then
+                countTrap = count
+            ElseIf value = "Monster" Then
+                countMonster = count
+            End If
+        End While
+
+
+        excelWorksheet.Range("A1, B1").Interior.Color = RGB(0, 0, 0)
+        excelWorksheet.Range("A1, B1").Font.Color = RGB(255, 255, 255)
+        excelWorksheet.Cells(1, 1) = "Category"
+        excelWorksheet.Cells(1, 2) = "Value"
+        excelWorksheet.Cells(2, 1) = "Spell"
+        excelWorksheet.Cells(2, 2) = countSpell
+        excelWorksheet.Cells(3, 1) = "Trap"
+        excelWorksheet.Cells(3, 2) = countTrap
+        excelWorksheet.Cells(4, 1) = "Monster"
+        excelWorksheet.Cells(4, 2) = countMonster
+
+        'Dim chartLocation As Excel.Range = excelWorksheet.Range("D5:J20")
+
+        ' select the data to use for the circle graph
+        Dim chartRange As Excel.Range = excelWorksheet.Range("A1:B4")
+
+        ' create a new chart and set its type to pie
+        Dim chartObjects As Excel.ChartObjects = excelWorksheet.ChartObjects()
+        Dim chartObject As Excel.ChartObject = chartObjects.Add(100, 100, 200, 200)
+        Dim chart As Excel.Chart = chartObject.Chart
+        chart.ChartType = Excel.XlChartType.xlPie
+
+        ' format the chart and apply styling
+        chart.SetSourceData(Source:=chartRange)
+        chart.ChartTitle.Text = ""
+        Try
+            ' add an image to the worksheet
+            Dim appPath As String = Application.StartupPath
+            Dim imageFilePath As String = Path.Combine(appPath, "Resources\Yugioh_Logo_Black.png")
+
+            Dim imageShape As Excel.Shape = excelWorksheet.Shapes.AddPicture(imageFilePath,
+            Microsoft.Office.Core.MsoTriState.msoFalse,
+            Microsoft.Office.Core.MsoTriState.msoTrue, 0, 0, 100, 50)
+
+            ' position the image above the chart
+            imageShape.Top = chartObject.Top - imageShape.Height - 10 ' adjust the offset as needed
+            imageShape.Left = chartObject.Left + (chartObject.Width - imageShape.Width) / 2
+        Catch ex As Exception
+        End Try
+
+        chart.Legend.Position = Excel.XlLegendPosition.xlLegendPositionBottom
+
+        ' calculate the top-left corner of cell D5
+        Dim cellD5 As Excel.Range = excelWorksheet.Range("D5")
+        Dim chartTop As Double = cellD5.Top
+        Dim chartLeft As Double = cellD5.Left
+
+        ' set the chart location to cell D5
+        chartObject.Top = chartTop
+        chartObject.Left = chartLeft
+
+
+        Dim desktopPath As String = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+        Dim excelFilePath As String = Path.Combine(desktopPath, "YuGiOh Report.xlsx")
+        excelWorkbook.SaveAs(excelFilePath)
+        excelWorkbook.Close()
+        excelApp.Quit()
+
+        releaseObject(excelWorksheet)
+        releaseObject(chartObject)
+        releaseObject(chartObjects)
+        releaseObject(chart)
+        releaseObject(excelWorkbook)
+        releaseObject(excelApp)
+        sqlReader.Close()
+        sqlConnection.Close()
+
+        MessageBox.Show("Export complete!")
+
+    End Sub
+    Private Sub releaseObject(ByVal obj As Object)
+        Try
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(obj)
+            obj = Nothing
+        Catch ex As Exception
+            obj = Nothing
+        Finally
+            GC.Collect()
+        End Try
     End Sub
 End Class
 
